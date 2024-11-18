@@ -1,11 +1,12 @@
-import React, { FunctionComponent } from 'react'
-import styled from '@emotion/styled'
-import GlobalStyle from 'components/Common/GlobalStyle'
-import Footer from 'components/Common/Footer'
-import CategoryList from 'components/Main/CategoryList'
-import Introduction from 'components/Main/Introduction'
-import PostList, { PostType } from 'components/Main/PostList'
-import { graphql } from 'gatsby'
+import React, { FunctionComponent } from "react"
+import styled from "@emotion/styled"
+import GlobalStyle from "components/Common/GlobalStyle"
+import Footer from "components/Common/Footer"
+import CategoryList from "components/Main/CategoryList"
+import Introduction from "components/Main/Introduction"
+import PostList from "components/Main/PostList"
+import { graphql } from "gatsby"
+import { PostListItemType } from "types/PostItem.type"
 
 const CATEGORY_LIST = {
   All: 5,
@@ -13,32 +14,40 @@ const CATEGORY_LIST = {
   Mobile: 2,
 }
 
-
-type IndexPageProps = {
-  data: {
-    allMarkdownRemark: {
-      edges: PostType[]
-    }
-  }
-}
-
-
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
 `
 
+import { IGatsbyImageData } from 'gatsby-plugin-image'
+
+
+type IndexPageProps = {
+  data: {
+    allMarkdownRemark: {
+      edges: PostListItemType[]
+    }
+    file: {
+      childImageSharp: {
+        gatsbyImageData: IGatsbyImageData
+      }
+    }
+  }
+}
+
 const IndexPage: FunctionComponent<IndexPageProps> = function ({
   data: {
     allMarkdownRemark: { edges },
+    file: {
+      childImageSharp: { gatsbyImageData },
+    },
   },
 }) {
-  console.log(edges)
   return (
     <Container>
       <GlobalStyle />
-      <Introduction />
+      <Introduction profileImage={gatsbyImageData} />
       <CategoryList selectedCategory="Web" categoryList={CATEGORY_LIST} />
       <PostList posts={edges} />
       <Footer />
@@ -62,10 +71,17 @@ export const getPostList = graphql`
             date(formatString: "YYYY.MM.DD.")
             categories
             thumbnail {
-              publicURL
+              childImageSharp {
+                gatsbyImageData(width: 768, height: 400)
+              }
             }
           }
         }
+      }
+    }
+    file(name: { eq: "profile-image" }) {
+      childImageSharp {
+        gatsbyImageData(width: 120, height: 120)
       }
     }
   }
